@@ -1,0 +1,58 @@
+@startuml User Flow - Add Activity
+
+!theme plain
+skinparam backgroundColor #1b2735
+skinparam defaultFontColor white
+skinparam activityBackgroundColor #667eea
+skinparam activityBorderColor white
+
+title User Flow: Add New Activity
+
+start
+
+:User opens Moments app;
+:Galaxy background loads with floating planets;
+:Activities load from database;
+
+if (User clicks "✨ Add Activity" bubble?) then (yes)
+  :Purple dialog opens with form;
+  :User fills activity details:
+  - Title
+  - Description  
+  - Address
+  - Labels
+  - Date
+  - Rating (1-10);
+  
+  if (User clicks Submit?) then (yes)
+    :Validate form data;
+    :Send POST request to /api/activities;
+    :Save to SQLite database;
+    :Activity appears in colorful bubble;
+    :Random cute notification shows;
+    :Send email to friend;
+    :Dialog closes;
+  else (cancel)
+    :Form resets;
+    :Dialog closes;
+  endif
+  
+else (no)
+  if (User uses filter?) then (yes)
+    :Filter activities by labels;
+    :Update displayed bubbles;
+  else (no)
+    if (User clicks edit/delete?) then (yes)
+      :Open edit dialog or confirm delete;
+      :Update/remove activity;
+    endif
+  endif
+endif
+
+:Activities displayed in sections:
+- Future Activities (bright bubbles)
+- Past Activities (muted bubbles);
+
+stop
+
+@enduml

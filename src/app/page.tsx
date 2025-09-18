@@ -24,6 +24,7 @@ interface Activity {
 
 export default function ActivitiesPage() {
     const [activities, setActivities] = useState<Activity[]>([]);
+    const [notification, setNotification] = useState<string | null>(null);
 
     // Load activities from database
     useEffect(() => {
@@ -37,10 +38,36 @@ export default function ActivitiesPage() {
     const [labels, setLabels] = useState<string[]>([]);
     const [picture, setPicture] = useState("");
     const [date, setDate] = useState("");
+    const [rating, setRating] = useState(5);
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
     const [selectedFilter, setSelectedFilter] = useState<string>('all');
+
+    // Cute messages for notifications
+    const cuteMessages = [
+        "New adventure added! 🎆",
+        "Another memory in the making! 🌈", 
+        "Your activity list is growing! 🌱",
+        "Ready for some fun? 🎉",
+        "New plan unlocked! 🔓",
+        "Adventure awaits! ✨"
+    ];
+
+    // Different gradient colors for notifications
+    const notificationColors = [
+        'bg-gradient-to-r from-pink-500 to-rose-500',
+        'bg-gradient-to-r from-purple-500 to-indigo-500', 
+        'bg-gradient-to-r from-blue-500 to-cyan-500',
+        'bg-gradient-to-r from-green-500 to-emerald-500',
+        'bg-gradient-to-r from-yellow-500 to-orange-500',
+        'bg-gradient-to-r from-red-500 to-pink-500'
+    ];
+
+    const showNotification = (message: string, colorClass: string) => {
+        setNotification(`${message}|${colorClass}`);
+        setTimeout(() => setNotification(null), 3000);
+    };
 
     // Reset all form fields
     const resetForm = () => {
@@ -50,6 +77,7 @@ export default function ActivitiesPage() {
         setLabels([]);
         setPicture("");
         setDate("");
+        setRating(5);
     };
 
     const handleAdd = async () => {
@@ -60,7 +88,7 @@ export default function ActivitiesPage() {
             const response = await fetch('/api/activities', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: editingActivity.id, title, description, address, labels, picture, rating: editingActivity.rating, date })
+                body: JSON.stringify({ id: editingActivity.id, title, description, address, labels, picture, rating, date })
             });
             
             const updatedActivity = await response.json();
@@ -70,11 +98,16 @@ export default function ActivitiesPage() {
             const response = await fetch('/api/activities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, address, labels, picture, rating: 5, date })
+                body: JSON.stringify({ title, description, address, labels, picture, rating, date })
             });
             
             const newActivity = await response.json();
             setActivities([newActivity, ...activities]);
+            
+            // Show cute notification
+            const randomMessage = cuteMessages[Math.floor(Math.random() * cuteMessages.length)];
+            const randomColor = notificationColors[Math.floor(Math.random() * notificationColors.length)];
+            showNotification(randomMessage, randomColor);
             
             // Send email notification
             fetch('/api/send-notification', {
@@ -97,6 +130,7 @@ export default function ActivitiesPage() {
         setLabels(activity.labels);
         setPicture(activity.picture || '');
         setDate(activity.date || '2024-09-17');
+        setRating(activity.rating || 5);
         setDialogOpen(true);
     };
 
@@ -116,26 +150,33 @@ export default function ActivitiesPage() {
     };
 
     return (
-        <main className="min-h-screen p-6 bg-white">
+        <main className="min-h-screen p-6 relative z-10">
+            <div className="planet-1"></div>
+            <div className="planet-2"></div>
+            {/* Cute notification */}
+            {notification && (
+                <div className={`notification ${notification.split('|')[1]}`}>
+                    {notification.split('|')[0]}
+                </div>
+            )}
             <div>
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-black">Activities</h2>
+                <div className="flex justify-end items-center mb-4">
                     <div className="flex gap-3 items-center">
                         <select 
-                            className="bg-gray-100 border border-gray-300 rounded px-3 py-1 text-black text-sm"
+                            className="filter-bubble"
                             value={selectedFilter}
                             onChange={(e) => setSelectedFilter(e.target.value)}
                         >
-                            <option value="all">All Activities</option>
+                            <option value="all" className="text-black">All Activities</option>
                             {Array.from(new Set(activities.flatMap(act => act.labels))).map(label => (
-                                <option key={label} value={label}>{label}</option>
+                                <option key={label} value={label} className="text-black">{label}</option>
                             ))}
                         </select>
                         <Button 
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="rate-bubble"
                             onClick={() => window.location.href = '/rate'}
                         >
-                            Rate Activities
+                            ⭐ Rate Activities
                         </Button>
                     </div>
                 </div>
@@ -152,7 +193,7 @@ export default function ActivitiesPage() {
                     }}
                 >
                     <DialogTrigger asChild>
-                        <Button className="bg-green-600 hover:bg-green-700 text-white">Add Activity</Button>
+                        <Button className="add-activity-bubble">✨ Add Activity</Button>
                     </DialogTrigger>
 
                 <DialogContent className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-white/20">
@@ -234,6 +275,22 @@ export default function ActivitiesPage() {
                             />
                         </div>
 
+                        {/* Rating */}
+                        <div>
+                            <label className="block mb-1 font-medium text-white" htmlFor="rating">
+                                Rating (1-10)
+                            </label>
+                            <input
+                                id="rating"
+                                type="number"
+                                min="1"
+                                max="10"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
+                                value={rating}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRating(Number(e.target.value))}
+                            />
+                        </div>
+
                         <Button 
                             onClick={handleAdd}
                             className="bg-white/20 hover:bg-white/30 text-white border-white/30"
@@ -247,8 +304,8 @@ export default function ActivitiesPage() {
 
                 {/* Future Activities */}
                 <div className="mt-6">
-                    <h3 className="text-lg font-bold text-black mb-3">🚀 Future Activities</h3>
-                    <div className="grid gap-2">
+                    <h3 className="galaxy-title">🚀 Future Activities</h3>
+                    <div className="bubble-container">
                         {activities
                             .filter(act => {
                                 if (!act.date) return false;
@@ -258,42 +315,42 @@ export default function ActivitiesPage() {
                                 return actDate >= today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
                             })
                             .map((act: Activity, idx: number) => {
-                                const planetColors = [
-                                    'bg-gradient-to-br from-blue-400 to-blue-600',
-                                    'bg-gradient-to-br from-red-400 to-red-600',
-                                    'bg-gradient-to-br from-yellow-400 to-orange-500',
-                                    'bg-gradient-to-br from-purple-400 to-purple-600',
-                                    'bg-gradient-to-br from-green-400 to-green-600',
-                                    'bg-gradient-to-br from-pink-400 to-pink-600'
+                                const bubbleColors = [
+                                    'bubble-pink',
+                                    'bubble-blue', 
+                                    'bubble-green',
+                                    'bubble-purple',
+                                    'bubble-orange',
+                                    'bubble-cyan'
                                 ];
-                                const planetBg = planetColors[idx % planetColors.length];
+                                const bubbleClass = bubbleColors[idx % bubbleColors.length];
                                 
                                 return (
-                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-3 flex justify-between text-xs`}>
-                                        <div className="flex-1">
-                                            <div className="font-bold mb-1">{act.title}</div>
-                                            <div className="text-white/80 mb-1">{act.date || 'No date'}</div>
-                                            {act.description && <div className="text-white/80 mb-1">{act.description}</div>}
-                                            {act.address && <div className="text-white/80 mb-1">📍 {act.address}</div>}
-                                            {act.labels.length > 0 && <div className="text-white/80 mb-1">🏷️ {act.labels.join(", ")}</div>}
-                                            <div className="text-white/80">⭐ {act.rating}/10</div>
+                                    <div key={idx} className={`activity-bubble ${bubbleClass}`}>
+                                        <div className="bubble-content">
+                                            <div className="bubble-title">{act.title}</div>
+                                            <div className="bubble-date">📅 {act.date}</div>
+                                            {act.description && <div className="bubble-desc">{act.description}</div>}
+                                            {act.address && <div className="bubble-location">📍 {act.address}</div>}
+                                            {act.labels.length > 0 && <div className="bubble-labels">🏷️ {act.labels.join(", ")}</div>}
+                                            <div className="bubble-rating">⭐ {act.rating}/10</div>
                                         </div>
-                                        <div className="flex flex-col gap-1 ml-2">
+                                        <div className="bubble-actions">
                                             <Button 
                                                 variant="outline" 
                                                 size="sm"
-                                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-5 px-1 text-xs"
+                                                className="bubble-btn edit"
                                                 onClick={() => handleEdit(act)}
                                             >
-                                                Edit
+                                                ✏️
                                             </Button>
                                             <Button 
                                                 variant="destructive" 
                                                 size="sm"
-                                                className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50 h-5 px-1 text-xs"
+                                                className="bubble-btn delete"
                                                 onClick={() => handleDelete(act.id!)}
                                             >
-                                                Delete
+                                                🗑️
                                             </Button>
                                         </div>
                                     </div>
@@ -305,50 +362,43 @@ export default function ActivitiesPage() {
 
                 {/* Past Activities */}
                 <div className="mt-6">
-                    <h3 className="text-lg font-bold text-black mb-3">📋 Past Activities</h3>
-                    <div className="grid gap-2">
+                    <h3 className="galaxy-title">📋 Past Activities</h3>
+                    <div className="bubble-container">
                         {activities
                             .filter(act => {
-                                if (!act.date) return true; // Show activities without date in past
+                                if (!act.date) return true;
                                 const actDate = new Date(act.date);
                                 const today = new Date();
                                 today.setHours(0, 0, 0, 0);
                                 return actDate < today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
                             })
                             .map((act: Activity, idx: number) => {
-                                const planetColors = [
-                                    'bg-gradient-to-br from-gray-400 to-gray-600',
-                                    'bg-gradient-to-br from-slate-400 to-slate-600',
-                                    'bg-gradient-to-br from-zinc-400 to-zinc-600'
-                                ];
-                                const planetBg = planetColors[idx % planetColors.length];
-                                
                                 return (
-                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-3 flex justify-between text-xs opacity-75`}>
-                                        <div className="flex-1">
-                                            <div className="font-bold mb-1">{act.title}</div>
-                                            <div className="text-white/80 mb-1">{act.date || 'No date'}</div>
-                                            {act.description && <div className="text-white/80 mb-1">{act.description}</div>}
-                                            {act.address && <div className="text-white/80 mb-1">📍 {act.address}</div>}
-                                            {act.labels.length > 0 && <div className="text-white/80 mb-1">🏷️ {act.labels.join(", ")}</div>}
-                                            <div className="text-white/80">⭐ {act.rating}/10</div>
+                                    <div key={idx} className="activity-bubble bubble-gray past">
+                                        <div className="bubble-content">
+                                            <div className="bubble-title">{act.title}</div>
+                                            <div className="bubble-date">📅 {act.date || 'Pas de date'}</div>
+                                            {act.description && <div className="bubble-desc">{act.description}</div>}
+                                            {act.address && <div className="bubble-location">📍 {act.address}</div>}
+                                            {act.labels.length > 0 && <div className="bubble-labels">🏷️ {act.labels.join(", ")}</div>}
+                                            <div className="bubble-rating">⭐ {act.rating}/10</div>
                                         </div>
-                                        <div className="flex flex-col gap-1 ml-2">
+                                        <div className="bubble-actions">
                                             <Button 
                                                 variant="outline" 
                                                 size="sm"
-                                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-5 px-1 text-xs"
+                                                className="bubble-btn edit"
                                                 onClick={() => handleEdit(act)}
                                             >
-                                                Edit
+                                                ✏️
                                             </Button>
                                             <Button 
                                                 variant="destructive" 
                                                 size="sm"
-                                                className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50 h-5 px-1 text-xs"
+                                                className="bubble-btn delete"
                                                 onClick={() => handleDelete(act.id!)}
                                             >
-                                                Delete
+                                                🗑️
                                             </Button>
                                         </div>
                                     </div>

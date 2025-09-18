@@ -1,0 +1,52 @@
+@startuml API Sequence Diagram
+
+!theme plain
+skinparam backgroundColor #1b2735
+skinparam defaultFontColor white
+skinparam participantBackgroundColor #667eea
+skinparam participantBorderColor white
+
+title API Sequence: Add Activity Flow
+
+actor User
+participant "Frontend\n(React)" as Frontend
+participant "API Route\n(/api/activities)" as API
+participant "Prisma ORM" as Prisma
+participant "SQLite DB" as DB
+participant "Email API\n(/api/send-notification)" as EmailAPI
+participant "SMTP Service" as SMTP
+
+User -> Frontend: Click "Add Activity"
+Frontend -> Frontend: Open dialog form
+
+User -> Frontend: Fill form & submit
+Frontend -> Frontend: Validate form data
+
+Frontend -> API: POST /api/activities
+note right: JSON payload with activity data
+
+API -> Prisma: prisma.activity.create()
+Prisma -> DB: INSERT INTO activities
+DB -> Prisma: Return created record
+Prisma -> API: Return activity object
+API -> Frontend: 201 Created + activity JSON
+
+Frontend -> Frontend: Add to activities state
+Frontend -> Frontend: Show cute notification
+Frontend -> Frontend: Close dialog
+
+Frontend -> EmailAPI: POST /api/send-notification
+note right: Send activity data for email
+
+EmailAPI -> SMTP: Send email notification
+SMTP -> EmailAPI: Email sent confirmation
+EmailAPI -> Frontend: 200 OK
+
+Frontend -> Frontend: Update UI with new bubble
+
+note over User, SMTP
+  The activity now appears as a colorful bubble
+  in the appropriate Future/Past section
+end note
+
+@enduml
