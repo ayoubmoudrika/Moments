@@ -19,6 +19,7 @@ interface Activity {
     labels: string[];
     picture?: string;
     rating: number;
+    date: string;
 }
 
 export default function ActivitiesPage() {
@@ -36,9 +37,11 @@ export default function ActivitiesPage() {
     const [labels, setLabels] = useState<string[]>([]);
     const [picture, setPicture] = useState("");
     const [rating, setRating] = useState<number>(1);
+    const [date, setDate] = useState("");
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+    const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
     // Reset all form fields
     const resetForm = () => {
@@ -48,17 +51,18 @@ export default function ActivitiesPage() {
         setLabels([]);
         setPicture("");
         setRating(1);
+        setDate("");
     };
 
     const handleAdd = async () => {
-        if (!title.trim()) return;
+        if (!title.trim() || !date) return;
         
         if (editingActivity) {
             // Update existing activity
             const response = await fetch('/api/activities', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: editingActivity.id, title, description, address, labels, picture, rating })
+                body: JSON.stringify({ id: editingActivity.id, title, description, address, labels, picture, rating, date })
             });
             
             const updatedActivity = await response.json();
@@ -68,7 +72,7 @@ export default function ActivitiesPage() {
             const response = await fetch('/api/activities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, address, labels, picture, rating })
+                body: JSON.stringify({ title, description, address, labels, picture, rating, date })
             });
             
             const newActivity = await response.json();
@@ -95,14 +99,23 @@ export default function ActivitiesPage() {
         setLabels(activity.labels);
         setPicture(activity.picture || '');
         setRating(activity.rating);
+        setDate(activity.date || '2024-09-17');
         setDialogOpen(true);
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure you want to delete this activity?')) return;
         
-        await fetch(`/api/activities?id=${id}`, { method: 'DELETE' });
-        setActivities(activities.filter(act => act.id !== id));
+        try {
+            const response = await fetch(`/api/activities?id=${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                setActivities(activities.filter(act => act.id !== id));
+            } else {
+                console.error('Delete failed:', response.status);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+        }
     };
 
     return (
@@ -129,7 +142,19 @@ export default function ActivitiesPage() {
             </div>
             
             <div className="relative z-10">
-                <h2 className="text-2xl font-bold mb-4 text-white">Activities</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-white">Activities</h2>
+                    <select 
+                        className="bg-white/10 border border-white/30 rounded px-3 py-1 text-white text-sm"
+                        value={selectedFilter}
+                        onChange={(e) => setSelectedFilter(e.target.value)}
+                    >
+                        <option value="all">All Activities</option>
+                        {Array.from(new Set(activities.flatMap(act => act.labels))).map(label => (
+                            <option key={label} value={label}>{label}</option>
+                        ))}
+                    </select>
+                </div>
 
             <Dialog
                 open={dialogOpen}
@@ -209,17 +234,18 @@ export default function ActivitiesPage() {
                             />
                         </div>
 
-                        {/* Picture */}
+                        {/* Date */}
                         <div>
-                            <label className="block mb-1 font-medium text-white" htmlFor="picture">
-                                Picture URL
+                            <label className="block mb-1 font-medium text-white" htmlFor="date">
+                                Date
                             </label>
                             <input
-                                id="picture"
-                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                placeholder="Optional image URL..."
-                                value={picture}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPicture(e.target.value)}
+                                id="date"
+                                type="date"
+                                required
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
+                                value={date}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
                             />
                         </div>
 
@@ -252,58 +278,117 @@ export default function ActivitiesPage() {
                 </DialogContent>
             </Dialog>
 
-                {/* Activities List */}
-                <div className="grid gap-4 mt-6">
-                {activities.map((act: Activity, idx: number) => {
-                    const planetColors = [
-                        'bg-gradient-to-br from-blue-400 to-blue-600', // Earth-like
-                        'bg-gradient-to-br from-red-400 to-red-600',   // Mars-like
-                        'bg-gradient-to-br from-yellow-400 to-orange-500', // Jupiter-like
-                        'bg-gradient-to-br from-purple-400 to-purple-600', // Neptune-like
-                        'bg-gradient-to-br from-green-400 to-green-600',   // Alien planet
-                        'bg-gradient-to-br from-pink-400 to-pink-600'     // Fantasy planet
-                    ];
-                    const planetBg = planetColors[idx % planetColors.length];
-                    
-                    return (
-                        <Card key={idx} className={`${planetBg} text-white border-white/20 shadow-lg backdrop-blur-sm`}>
-                            <CardContent className="pt-6">
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-bold">{act.title}</h3>
-                                <div className="flex gap-2">
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                                        onClick={() => handleEdit(act)}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button 
-                                        variant="destructive" 
-                                        size="sm"
-                                        className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50"
-                                        onClick={() => handleDelete(act.id!)}
-                                    >
-                                        Delete
-                                    </Button>
-                                </div>
-                            </div>
-                            {act.description && <p>{act.description}</p>}
-                            {act.address && <p>📍 {act.address}</p>}
-                            {act.labels.length > 0 && <p>🏷️ {act.labels.join(", ")}</p>}
-                            {act.picture && (
-                                <img
-                                    src={act.picture}
-                                    alt={act.title}
-                                    className="mt-2 w-full max-w-xs rounded"
-                                />
-                            )}
-                            <p>Rating: ⭐ {act.rating} (hidden from friend until both rate)</p>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+                {/* Future Activities */}
+                <div className="mt-6">
+                    <h3 className="text-lg font-bold text-white mb-3">🚀 Future Activities</h3>
+                    <div className="grid gap-2">
+                        {activities
+                            .filter(act => {
+                                if (!act.date) return false;
+                                const actDate = new Date(act.date);
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                return actDate >= today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
+                            })
+                            .map((act: Activity, idx: number) => {
+                                const planetColors = [
+                                    'bg-gradient-to-br from-blue-400 to-blue-600',
+                                    'bg-gradient-to-br from-red-400 to-red-600',
+                                    'bg-gradient-to-br from-yellow-400 to-orange-500',
+                                    'bg-gradient-to-br from-purple-400 to-purple-600',
+                                    'bg-gradient-to-br from-green-400 to-green-600',
+                                    'bg-gradient-to-br from-pink-400 to-pink-600'
+                                ];
+                                const planetBg = planetColors[idx % planetColors.length];
+                                
+                                return (
+                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-2 flex items-center justify-between text-xs`}>
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <span className="font-bold truncate">{act.title}</span>
+                                            <span className="text-white/80">{act.date}</span>
+                                            {act.description && <span className="text-white/80 truncate">{act.description}</span>}
+                                            {act.address && <span className="text-white/80">📍 {act.address}</span>}
+                                            {act.labels.length > 0 && <span className="text-white/80">🏷️ {act.labels.join(", ")}</span>}
+                                            <span className="text-white/80">⭐ {act.rating}/10</span>
+                                        </div>
+                                        <div className="flex gap-1 ml-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-5 px-1 text-xs"
+                                                onClick={() => handleEdit(act)}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button 
+                                                variant="destructive" 
+                                                size="sm"
+                                                className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50 h-5 px-1 text-xs"
+                                                onClick={() => handleDelete(act.id!)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        }
+                    </div>
+                </div>
+
+                {/* Past Activities */}
+                <div className="mt-6">
+                    <h3 className="text-lg font-bold text-white mb-3">📋 Past Activities</h3>
+                    <div className="grid gap-2">
+                        {activities
+                            .filter(act => {
+                                if (!act.date) return true; // Show activities without date in past
+                                const actDate = new Date(act.date);
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                return actDate < today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
+                            })
+                            .map((act: Activity, idx: number) => {
+                                const planetColors = [
+                                    'bg-gradient-to-br from-gray-400 to-gray-600',
+                                    'bg-gradient-to-br from-slate-400 to-slate-600',
+                                    'bg-gradient-to-br from-zinc-400 to-zinc-600'
+                                ];
+                                const planetBg = planetColors[idx % planetColors.length];
+                                
+                                return (
+                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-2 flex items-center justify-between text-xs opacity-75`}>
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <span className="font-bold truncate">{act.title}</span>
+                                            <span className="text-white/80">{act.date}</span>
+                                            {act.description && <span className="text-white/80 truncate">{act.description}</span>}
+                                            {act.address && <span className="text-white/80">📍 {act.address}</span>}
+                                            {act.labels.length > 0 && <span className="text-white/80">🏷️ {act.labels.join(", ")}</span>}
+                                            <span className="text-white/80">⭐ {act.rating}/10</span>
+                                        </div>
+                                        <div className="flex gap-1 ml-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-5 px-1 text-xs"
+                                                onClick={() => handleEdit(act)}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button 
+                                                variant="destructive" 
+                                                size="sm"
+                                                className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50 h-5 px-1 text-xs"
+                                                onClick={() => handleDelete(act.id!)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        }
+                    </div>
                 </div>
             </div>
         </main>

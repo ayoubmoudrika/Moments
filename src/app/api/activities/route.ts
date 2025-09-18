@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
       address: body.address,
       labels: JSON.stringify(body.labels),
       picture: body.picture,
-      rating: body.rating
+      rating: body.rating,
+      date: body.date
     }
   })
   
@@ -43,7 +44,8 @@ export async function PUT(request: NextRequest) {
       address: body.address,
       labels: JSON.stringify(body.labels),
       picture: body.picture,
-      rating: body.rating
+      rating: body.rating,
+      date: body.date
     }
   })
   

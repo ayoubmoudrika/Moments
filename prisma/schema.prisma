@@ -19,5 +19,6 @@ model Activity {
   labels      String?  // JSON string
   picture     String?
   rating      Int
+  date        String   @default("2024-09-17")
   createdAt   DateTime @default(now())
 }
