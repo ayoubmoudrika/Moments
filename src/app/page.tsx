@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/dialog";
 
 interface Activity {
+    id?: number;
     title: string;
-    description?: string;
-    address?: string;
+    description: string;
+    address: string;
     labels: string[];
     picture?: string;
     rating: number;
@@ -22,6 +23,13 @@ interface Activity {
 
 export default function ActivitiesPage() {
     const [activities, setActivities] = useState<Activity[]>([]);
+
+    // Load activities from database
+    useEffect(() => {
+        fetch('/api/activities')
+            .then(res => res.json())
+            .then(setActivities)
+    }, []);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
@@ -30,6 +38,7 @@ export default function ActivitiesPage() {
     const [rating, setRating] = useState<number>(1);
 
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
     // Reset all form fields
     const resetForm = () => {
@@ -41,14 +50,52 @@ export default function ActivitiesPage() {
         setRating(1);
     };
 
-    const handleAdd = () => {
+    const handleAdd = async () => {
         if (!title.trim()) return;
-        setActivities([
-            ...activities,
-            { title, description, address, labels, picture, rating },
-        ]);
+        
+        if (editingActivity) {
+            // Update existing activity
+            const response = await fetch('/api/activities', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: editingActivity.id, title, description, address, labels, picture, rating })
+            });
+            
+            const updatedActivity = await response.json();
+            setActivities(activities.map(act => act.id === editingActivity.id ? updatedActivity : act));
+        } else {
+            // Create new activity
+            const response = await fetch('/api/activities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description, address, labels, picture, rating })
+            });
+            
+            const newActivity = await response.json();
+            setActivities([newActivity, ...activities]);
+        }
+        
         resetForm();
-        setDialogOpen(false); // Close the dialog
+        setDialogOpen(false);
+        setEditingActivity(null);
+    };
+
+    const handleEdit = (activity: Activity) => {
+        setEditingActivity(activity);
+        setTitle(activity.title);
+        setDescription(activity.description);
+        setAddress(activity.address);
+        setLabels(activity.labels);
+        setPicture(activity.picture || '');
+        setRating(activity.rating);
+        setDialogOpen(true);
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this activity?')) return;
+        
+        await fetch(`/api/activities?id=${id}`, { method: 'DELETE' });
+        setActivities(activities.filter(act => act.id !== id));
     };
 
     return (
@@ -57,9 +104,12 @@ export default function ActivitiesPage() {
 
             <Dialog
                 open={dialogOpen}
-                onOpenChange={(open) => {
+                onOpenChange={(open: boolean) => {
                     setDialogOpen(open);
-                    if (!open) resetForm(); // Reset fields if user closes with X
+                    if (!open) {
+                        resetForm();
+                        setEditingActivity(null);
+                    }
                 }}
             >
                 <DialogTrigger asChild>
@@ -68,7 +118,7 @@ export default function ActivitiesPage() {
 
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add a new activity</DialogTitle>
+                        <DialogTitle>{editingActivity ? 'Edit Activity' : 'Add a new activity'}</DialogTitle>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-4 mt-4">
@@ -82,7 +132,7 @@ export default function ActivitiesPage() {
                                 className="w-full p-2 border rounded"
                                 placeholder="Activity name..."
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
                             />
                         </div>
 
@@ -96,7 +146,7 @@ export default function ActivitiesPage() {
                                 className="w-full p-2 border rounded"
                                 placeholder="Optional details..."
                                 value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
                             />
                         </div>
 
@@ -110,7 +160,7 @@ export default function ActivitiesPage() {
                                 className="w-full p-2 border rounded"
                                 placeholder="Location or map link..."
                                 value={address}
-                                onChange={(e) => setAddress(e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
                             />
                         </div>
 
@@ -124,8 +174,8 @@ export default function ActivitiesPage() {
                                 className="w-full p-2 border rounded"
                                 placeholder="Comma-separated, e.g., outdoors, food"
                                 value={labels.join(", ")}
-                                onChange={(e) =>
-                                    setLabels(e.target.value.split(",").map((l) => l.trim()))
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                    setLabels(e.target.value.split(",").map((l: string) => l.trim()))
                                 }
                             />
                         </div>
@@ -140,7 +190,7 @@ export default function ActivitiesPage() {
                                 className="w-full p-2 border rounded"
                                 placeholder="Optional image URL..."
                                 value={picture}
-                                onChange={(e) => setPicture(e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPicture(e.target.value)}
                             />
                         </div>
 
@@ -153,7 +203,7 @@ export default function ActivitiesPage() {
                                 id="rating"
                                 className="w-full p-2 border rounded"
                                 value={rating}
-                                onChange={(e) => setRating(Number(e.target.value))}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRating(Number(e.target.value))}
                             >
                                 {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                                     <option key={num} value={num}>
@@ -163,17 +213,35 @@ export default function ActivitiesPage() {
                             </select>
                         </div>
 
-                        <Button onClick={handleAdd}>Submit</Button>
+                        <Button onClick={handleAdd}>{editingActivity ? 'Update' : 'Submit'}</Button>
                     </div>
                 </DialogContent>
             </Dialog>
 
             {/* Activities List */}
             <div className="grid gap-4 mt-6">
-                {activities.map((act, idx) => (
+                {activities.map((act: Activity, idx: number) => (
                     <Card key={idx}>
-                        <CardContent>
-                            <h3 className="font-bold">{act.title}</h3>
+                        <CardContent className="pt-6">
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-bold">{act.title}</h3>
+                                <div className="flex gap-2">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => handleEdit(act)}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button 
+                                        variant="destructive" 
+                                        size="sm"
+                                        onClick={() => handleDelete(act.id!)}
+                                    >
+                                        Delete
+                                    </Button>
+                                </div>
+                            </div>
                             {act.description && <p>{act.description}</p>}
                             {act.address && <p>📍 {act.address}</p>}
                             {act.labels.length > 0 && <p>🏷️ {act.labels.join(", ")}</p>}
