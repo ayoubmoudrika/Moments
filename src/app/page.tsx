@@ -73,6 +73,13 @@ export default function ActivitiesPage() {
             
             const newActivity = await response.json();
             setActivities([newActivity, ...activities]);
+            
+            // Send email notification
+            fetch('/api/send-notification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ activity: newActivity })
+            }).catch(console.error);
         }
         
         resetForm();
@@ -99,8 +106,30 @@ export default function ActivitiesPage() {
     };
 
     return (
-        <main className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Activities</h2>
+        <main className="min-h-screen p-6 relative" style={{
+            background: 'radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%)',
+            backgroundAttachment: 'fixed'
+        }}>
+            {/* Stars */}
+            <div className="absolute inset-0 overflow-hidden">
+                {Array.from({ length: 100 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute bg-white rounded-full animate-pulse"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            width: `${Math.random() * 3 + 1}px`,
+                            height: `${Math.random() * 3 + 1}px`,
+                            animationDelay: `${Math.random() * 3}s`,
+                            animationDuration: `${Math.random() * 3 + 2}s`
+                        }}
+                    />
+                ))}
+            </div>
+            
+            <div className="relative z-10">
+                <h2 className="text-2xl font-bold mb-4 text-white">Activities</h2>
 
             <Dialog
                 open={dialogOpen}
@@ -113,23 +142,23 @@ export default function ActivitiesPage() {
                 }}
             >
                 <DialogTrigger asChild>
-                    <Button>Add Activity</Button>
+                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">Add Activity</Button>
                 </DialogTrigger>
 
-                <DialogContent>
+                <DialogContent className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-white/20">
                     <DialogHeader>
-                        <DialogTitle>{editingActivity ? 'Edit Activity' : 'Add a new activity'}</DialogTitle>
+                        <DialogTitle className="text-white">{editingActivity ? 'Edit Activity' : 'Add a new activity'}</DialogTitle>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-4 mt-4">
                         {/* Title */}
                         <div>
-                            <label className="block mb-1 font-medium" htmlFor="title">
+                            <label className="block mb-1 font-medium text-white" htmlFor="title">
                                 Title
                             </label>
                             <input
                                 id="title"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
                                 placeholder="Activity name..."
                                 value={title}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
@@ -138,12 +167,12 @@ export default function ActivitiesPage() {
 
                         {/* Description */}
                         <div>
-                            <label className="block mb-1 font-medium" htmlFor="description">
+                            <label className="block mb-1 font-medium text-white" htmlFor="description">
                                 Description
                             </label>
                             <textarea
                                 id="description"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
                                 placeholder="Optional details..."
                                 value={description}
                                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
@@ -152,12 +181,12 @@ export default function ActivitiesPage() {
 
                         {/* Address */}
                         <div>
-                            <label className="block mb-1 font-medium" htmlFor="address">
+                            <label className="block mb-1 font-medium text-white" htmlFor="address">
                                 Address / Place
                             </label>
                             <input
                                 id="address"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
                                 placeholder="Location or map link..."
                                 value={address}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
@@ -166,12 +195,12 @@ export default function ActivitiesPage() {
 
                         {/* Labels */}
                         <div>
-                            <label className="block mb-1 font-medium" htmlFor="labels">
+                            <label className="block mb-1 font-medium text-white" htmlFor="labels">
                                 Labels
                             </label>
                             <input
                                 id="labels"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
                                 placeholder="Comma-separated, e.g., outdoors, food"
                                 value={labels.join(", ")}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -182,12 +211,12 @@ export default function ActivitiesPage() {
 
                         {/* Picture */}
                         <div>
-                            <label className="block mb-1 font-medium" htmlFor="picture">
+                            <label className="block mb-1 font-medium text-white" htmlFor="picture">
                                 Picture URL
                             </label>
                             <input
                                 id="picture"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
                                 placeholder="Optional image URL..."
                                 value={picture}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPicture(e.target.value)}
@@ -196,12 +225,12 @@ export default function ActivitiesPage() {
 
                         {/* Rating */}
                         <div>
-                            <label className="block mb-1 font-medium" htmlFor="rating">
+                            <label className="block mb-1 font-medium text-white" htmlFor="rating">
                                 Rating (1–10)
                             </label>
                             <select
                                 id="rating"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
                                 value={rating}
                                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRating(Number(e.target.value))}
                             >
@@ -213,22 +242,39 @@ export default function ActivitiesPage() {
                             </select>
                         </div>
 
-                        <Button onClick={handleAdd}>{editingActivity ? 'Update' : 'Submit'}</Button>
+                        <Button 
+                            onClick={handleAdd}
+                            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                        >
+                            {editingActivity ? 'Update' : 'Submit'}
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Activities List */}
-            <div className="grid gap-4 mt-6">
-                {activities.map((act: Activity, idx: number) => (
-                    <Card key={idx}>
-                        <CardContent className="pt-6">
+                {/* Activities List */}
+                <div className="grid gap-4 mt-6">
+                {activities.map((act: Activity, idx: number) => {
+                    const planetColors = [
+                        'bg-gradient-to-br from-blue-400 to-blue-600', // Earth-like
+                        'bg-gradient-to-br from-red-400 to-red-600',   // Mars-like
+                        'bg-gradient-to-br from-yellow-400 to-orange-500', // Jupiter-like
+                        'bg-gradient-to-br from-purple-400 to-purple-600', // Neptune-like
+                        'bg-gradient-to-br from-green-400 to-green-600',   // Alien planet
+                        'bg-gradient-to-br from-pink-400 to-pink-600'     // Fantasy planet
+                    ];
+                    const planetBg = planetColors[idx % planetColors.length];
+                    
+                    return (
+                        <Card key={idx} className={`${planetBg} text-white border-white/20 shadow-lg backdrop-blur-sm`}>
+                            <CardContent className="pt-6">
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-bold">{act.title}</h3>
                                 <div className="flex gap-2">
                                     <Button 
                                         variant="outline" 
                                         size="sm"
+                                        className="bg-white/20 border-white/30 text-white hover:bg-white/30"
                                         onClick={() => handleEdit(act)}
                                     >
                                         Edit
@@ -236,6 +282,7 @@ export default function ActivitiesPage() {
                                     <Button 
                                         variant="destructive" 
                                         size="sm"
+                                        className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50"
                                         onClick={() => handleDelete(act.id!)}
                                     >
                                         Delete
@@ -253,9 +300,11 @@ export default function ActivitiesPage() {
                                 />
                             )}
                             <p>Rating: ⭐ {act.rating} (hidden from friend until both rate)</p>
-                        </CardContent>
-                    </Card>
-                ))}
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+                </div>
             </div>
         </main>
     );
