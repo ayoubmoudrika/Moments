@@ -36,7 +36,6 @@ export default function ActivitiesPage() {
     const [address, setAddress] = useState("");
     const [labels, setLabels] = useState<string[]>([]);
     const [picture, setPicture] = useState("");
-    const [rating, setRating] = useState<number>(1);
     const [date, setDate] = useState("");
 
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -50,7 +49,6 @@ export default function ActivitiesPage() {
         setAddress("");
         setLabels([]);
         setPicture("");
-        setRating(1);
         setDate("");
     };
 
@@ -62,7 +60,7 @@ export default function ActivitiesPage() {
             const response = await fetch('/api/activities', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: editingActivity.id, title, description, address, labels, picture, rating, date })
+                body: JSON.stringify({ id: editingActivity.id, title, description, address, labels, picture, rating: editingActivity.rating, date })
             });
             
             const updatedActivity = await response.json();
@@ -72,7 +70,7 @@ export default function ActivitiesPage() {
             const response = await fetch('/api/activities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, address, labels, picture, rating, date })
+                body: JSON.stringify({ title, description, address, labels, picture, rating: 5, date })
             });
             
             const newActivity = await response.json();
@@ -98,7 +96,6 @@ export default function ActivitiesPage() {
         setAddress(activity.address);
         setLabels(activity.labels);
         setPicture(activity.picture || '');
-        setRating(activity.rating);
         setDate(activity.date || '2024-09-17');
         setDialogOpen(true);
     };
@@ -156,19 +153,20 @@ export default function ActivitiesPage() {
                     </select>
                 </div>
 
-            <Dialog
-                open={dialogOpen}
-                onOpenChange={(open: boolean) => {
-                    setDialogOpen(open);
-                    if (!open) {
-                        resetForm();
-                        setEditingActivity(null);
-                    }
-                }}
-            >
-                <DialogTrigger asChild>
-                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">Add Activity</Button>
-                </DialogTrigger>
+            <div className="mb-4">
+                <Dialog
+                    open={dialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setDialogOpen(open);
+                        if (!open) {
+                            resetForm();
+                            setEditingActivity(null);
+                        }
+                    }}
+                >
+                    <DialogTrigger asChild>
+                        <Button className="bg-purple-600 hover:bg-purple-700 text-white">Add Activity</Button>
+                    </DialogTrigger>
 
                 <DialogContent className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-white/20">
                     <DialogHeader>
@@ -249,24 +247,7 @@ export default function ActivitiesPage() {
                             />
                         </div>
 
-                        {/* Rating */}
-                        <div>
-                            <label className="block mb-1 font-medium text-white" htmlFor="rating">
-                                Rating (1–10)
-                            </label>
-                            <select
-                                id="rating"
-                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
-                                value={rating}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRating(Number(e.target.value))}
-                            >
-                                {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                                    <option key={num} value={num}>
-                                        {num}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+
 
                         <Button 
                             onClick={handleAdd}
@@ -276,7 +257,8 @@ export default function ActivitiesPage() {
                         </Button>
                     </div>
                 </DialogContent>
-            </Dialog>
+                </Dialog>
+            </div>
 
                 {/* Future Activities */}
                 <div className="mt-6">
