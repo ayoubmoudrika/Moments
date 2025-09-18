@@ -116,34 +116,13 @@ export default function ActivitiesPage() {
     };
 
     return (
-        <main className="min-h-screen p-6 relative" style={{
-            background: 'radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%)',
-            backgroundAttachment: 'fixed'
-        }}>
-            {/* Stars */}
-            <div className="absolute inset-0 overflow-hidden">
-                {Array.from({ length: 100 }).map((_, i) => (
-                    <div
-                        key={i}
-                        className="absolute bg-white rounded-full animate-pulse"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            width: `${Math.random() * 3 + 1}px`,
-                            height: `${Math.random() * 3 + 1}px`,
-                            animationDelay: `${Math.random() * 3}s`,
-                            animationDuration: `${Math.random() * 3 + 2}s`
-                        }}
-                    />
-                ))}
-            </div>
-            
-            <div className="relative z-10">
+        <main className="min-h-screen p-6 bg-white">
+            <div>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-white">Activities</h2>
+                    <h2 className="text-2xl font-bold text-black">Activities</h2>
                     <div className="flex gap-3 items-center">
                         <select 
-                            className="bg-white/10 border border-white/30 rounded px-3 py-1 text-white text-sm"
+                            className="bg-gray-100 border border-gray-300 rounded px-3 py-1 text-black text-sm"
                             value={selectedFilter}
                             onChange={(e) => setSelectedFilter(e.target.value)}
                         >
@@ -153,7 +132,7 @@ export default function ActivitiesPage() {
                             ))}
                         </select>
                         <Button 
-                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
                             onClick={() => window.location.href = '/rate'}
                         >
                             Rate Activities
@@ -173,7 +152,7 @@ export default function ActivitiesPage() {
                     }}
                 >
                     <DialogTrigger asChild>
-                        <Button className="bg-purple-600 hover:bg-purple-700 text-white">Add Activity</Button>
+                        <Button className="bg-green-600 hover:bg-green-700 text-white">Add Activity</Button>
                     </DialogTrigger>
 
                 <DialogContent className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-white/20">
@@ -268,7 +247,7 @@ export default function ActivitiesPage() {
 
                 {/* Future Activities */}
                 <div className="mt-6">
-                    <h3 className="text-lg font-bold text-white mb-3">🚀 Future Activities</h3>
+                    <h3 className="text-lg font-bold text-black mb-3">🚀 Future Activities</h3>
                     <div className="grid gap-2">
                         {activities
                             .filter(act => {
@@ -290,16 +269,16 @@ export default function ActivitiesPage() {
                                 const planetBg = planetColors[idx % planetColors.length];
                                 
                                 return (
-                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-2 flex items-center justify-between text-xs`}>
-                                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <span className="font-bold truncate">{act.title}</span>
-                                            <span className="text-white/80">{act.date || 'No date'}</span>
-                                            {act.description && <span className="text-white/80 truncate">{act.description}</span>}
-                                            {act.address && <span className="text-white/80">📍 {act.address}</span>}
-                                            {act.labels.length > 0 && <span className="text-white/80">🏷️ {act.labels.join(", ")}</span>}
-                                            <span className="text-white/80">⭐ {act.rating}/10</span>
+                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-3 flex justify-between text-xs`}>
+                                        <div className="flex-1">
+                                            <div className="font-bold mb-1">{act.title}</div>
+                                            <div className="text-white/80 mb-1">{act.date || 'No date'}</div>
+                                            {act.description && <div className="text-white/80 mb-1">{act.description}</div>}
+                                            {act.address && <div className="text-white/80 mb-1">📍 {act.address}</div>}
+                                            {act.labels.length > 0 && <div className="text-white/80 mb-1">🏷️ {act.labels.join(", ")}</div>}
+                                            <div className="text-white/80">⭐ {act.rating}/10</div>
                                         </div>
-                                        <div className="flex gap-1 ml-2">
+                                        <div className="flex flex-col gap-1 ml-2">
                                             <Button 
                                                 variant="outline" 
                                                 size="sm"
@@ -326,7 +305,7 @@ export default function ActivitiesPage() {
 
                 {/* Past Activities */}
                 <div className="mt-6">
-                    <h3 className="text-lg font-bold text-white mb-3">📋 Past Activities</h3>
+                    <h3 className="text-lg font-bold text-black mb-3">📋 Past Activities</h3>
                     <div className="grid gap-2">
                         {activities
                             .filter(act => {
@@ -345,16 +324,16 @@ export default function ActivitiesPage() {
                                 const planetBg = planetColors[idx % planetColors.length];
                                 
                                 return (
-                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-2 flex items-center justify-between text-xs opacity-75`}>
-                                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <span className="font-bold truncate">{act.title}</span>
-                                            <span className="text-white/80">{act.date || 'No date'}</span>
-                                            {act.description && <span className="text-white/80 truncate">{act.description}</span>}
-                                            {act.address && <span className="text-white/80">📍 {act.address}</span>}
-                                            {act.labels.length > 0 && <span className="text-white/80">🏷️ {act.labels.join(", ")}</span>}
-                                            <span className="text-white/80">⭐ {act.rating}/10</span>
+                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-3 flex justify-between text-xs opacity-75`}>
+                                        <div className="flex-1">
+                                            <div className="font-bold mb-1">{act.title}</div>
+                                            <div className="text-white/80 mb-1">{act.date || 'No date'}</div>
+                                            {act.description && <div className="text-white/80 mb-1">{act.description}</div>}
+                                            {act.address && <div className="text-white/80 mb-1">📍 {act.address}</div>}
+                                            {act.labels.length > 0 && <div className="text-white/80 mb-1">🏷️ {act.labels.join(", ")}</div>}
+                                            <div className="text-white/80">⭐ {act.rating}/10</div>
                                         </div>
-                                        <div className="flex gap-1 ml-2">
+                                        <div className="flex flex-col gap-1 ml-2">
                                             <Button 
                                                 variant="outline" 
                                                 size="sm"

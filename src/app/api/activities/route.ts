@@ -6,10 +6,18 @@ export async function GET() {
     orderBy: { createdAt: 'desc' }
   })
   
-  return NextResponse.json(activities.map(activity => ({
-    ...activity,
-    labels: activity.labels ? JSON.parse(activity.labels) : []
-  })))
+  return NextResponse.json(activities.map(activity => {
+    let labels = []
+    try {
+      labels = activity.labels ? JSON.parse(activity.labels) : []
+    } catch {
+      labels = []
+    }
+    return {
+      ...activity,
+      labels
+    }
+  }))
 }
 
 export async function POST(request: NextRequest) {
@@ -27,9 +35,16 @@ export async function POST(request: NextRequest) {
     }
   })
   
+  let labels = []
+  try {
+    labels = activity.labels ? JSON.parse(activity.labels) : []
+  } catch {
+    labels = []
+  }
+  
   return NextResponse.json({
     ...activity,
-    labels: activity.labels ? JSON.parse(activity.labels) : []
+    labels
   })
 }
 
@@ -49,9 +64,16 @@ export async function PUT(request: NextRequest) {
     }
   })
   
+  let labels = []
+  try {
+    labels = activity.labels ? JSON.parse(activity.labels) : []
+  } catch {
+    labels = []
+  }
+  
   return NextResponse.json({
     ...activity,
-    labels: activity.labels ? JSON.parse(activity.labels) : []
+    labels
   })
 }
 
