@@ -1,4 +1,5 @@
 # Moments
+<<<<<<< HEAD
 
 Activity log for Medina &amp; Ayoub
 
@@ -19,6 +20,11 @@ Activity log for Medina &amp; Ayoub
 8. **Edit or delete activities** - users can modify activity details or remove activities as plans change
 
 More User stories to detail later:
+=======
+Activity log for Medina &amp; Ayoub
+
+Add activity suggestions with title, description, location, pictures, and labels.
+>>>>>>> origin/feature/working-app-setup
 
 Rate activities before doing them — ratings are hidden until both have submitted theirs.
 
@@ -27,3 +33,8 @@ View details: click on an activity to see addresses, places, or photos.
 Organize with labels: quickly filter and categorize activities by type.
 
 Edit or delete activities as plans change.
+<<<<<<< HEAD
+=======
+
+Notifications when a new activity is added or deleted, so both stay in sync.
+>>>>>>> origin/feature/working-app-setup

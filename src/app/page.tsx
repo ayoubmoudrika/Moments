@@ -141,16 +141,24 @@ export default function ActivitiesPage() {
             <div className="relative z-10">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-white">Activities</h2>
-                    <select 
-                        className="bg-white/10 border border-white/30 rounded px-3 py-1 text-white text-sm"
-                        value={selectedFilter}
-                        onChange={(e) => setSelectedFilter(e.target.value)}
-                    >
-                        <option value="all">All Activities</option>
-                        {Array.from(new Set(activities.flatMap(act => act.labels))).map(label => (
-                            <option key={label} value={label}>{label}</option>
-                        ))}
-                    </select>
+                    <div className="flex gap-3 items-center">
+                        <select 
+                            className="bg-white/10 border border-white/30 rounded px-3 py-1 text-white text-sm"
+                            value={selectedFilter}
+                            onChange={(e) => setSelectedFilter(e.target.value)}
+                        >
+                            <option value="all">All Activities</option>
+                            {Array.from(new Set(activities.flatMap(act => act.labels))).map(label => (
+                                <option key={label} value={label}>{label}</option>
+                            ))}
+                        </select>
+                        <Button 
+                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                            onClick={() => window.location.href = '/rate'}
+                        >
+                            Rate Activities
+                        </Button>
+                    </div>
                 </div>
 
             <div className="mb-4">
@@ -247,8 +255,6 @@ export default function ActivitiesPage() {
                             />
                         </div>
 
-
-
                         <Button 
                             onClick={handleAdd}
                             className="bg-white/20 hover:bg-white/30 text-white border-white/30"
@@ -287,7 +293,7 @@ export default function ActivitiesPage() {
                                     <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-2 flex items-center justify-between text-xs`}>
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
                                             <span className="font-bold truncate">{act.title}</span>
-                                            <span className="text-white/80">{act.date}</span>
+                                            <span className="text-white/80">{act.date || 'No date'}</span>
                                             {act.description && <span className="text-white/80 truncate">{act.description}</span>}
                                             {act.address && <span className="text-white/80">📍 {act.address}</span>}
                                             {act.labels.length > 0 && <span className="text-white/80">🏷️ {act.labels.join(", ")}</span>}
@@ -342,7 +348,7 @@ export default function ActivitiesPage() {
                                     <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-2 flex items-center justify-between text-xs opacity-75`}>
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
                                             <span className="font-bold truncate">{act.title}</span>
-                                            <span className="text-white/80">{act.date}</span>
+                                            <span className="text-white/80">{act.date || 'No date'}</span>
                                             {act.description && <span className="text-white/80 truncate">{act.description}</span>}
                                             {act.address && <span className="text-white/80">📍 {act.address}</span>}
                                             {act.labels.length > 0 && <span className="text-white/80">🏷️ {act.labels.join(", ")}</span>}
