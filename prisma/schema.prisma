@@ -20,5 +20,6 @@ model Activity {
   picture     String?
   rating      Int
   date        String   @default("2024-09-17")
+  moment      String?
   createdAt   DateTime @default(now())
 }

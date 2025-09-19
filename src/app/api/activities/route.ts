@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
       labels: JSON.stringify(body.labels),
       picture: body.picture,
       rating: body.rating,
-      date: body.date
+      date: body.date,
+      moment: body.moment
     }
   })
   
@@ -60,7 +61,8 @@ export async function PUT(request: NextRequest) {
       labels: JSON.stringify(body.labels),
       picture: body.picture,
       rating: body.rating,
-      date: body.date
+      date: body.date,
+      moment: body.moment
     }
   })
   
