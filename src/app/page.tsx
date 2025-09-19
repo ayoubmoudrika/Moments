@@ -193,509 +193,248 @@ export default function ActivitiesPage() {
     };
 
     return (
-        <main className="min-h-screen p-6 relative z-10">
-            <div className="planet-1"></div>
-            <div className="planet-2"></div>
-            {/* Cute notification */}
-            {notification && (
-                <div className={`notification ${notification.split('|')[1]}`}>
-                    {notification.split('|')[0]}
-                </div>
-            )}
+        <main className="min-h-screen p-6 bg-white">
             <div>
                 <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-3">
-                        {!isAuthenticated ? (
-                            <Button 
-                                className="login-btn"
-                                onClick={() => window.location.href = '/login'}
-                            >
-                                🔐 Login
-                            </Button>
-                        ) : (
-                            <div className="user-info">
-                                <span className="welcome-text">Welcome, {currentUser}! 👋</span>
-                                <Button 
-                                    className="logout-btn"
-                                    onClick={() => {
-                                        localStorage.removeItem('authenticated');
-                                        localStorage.removeItem('currentUser');
-                                        setIsAuthenticated(false);
-                                        setCurrentUser(null);
-                                    }}
-                                >
-                                    Logout
-                                </Button>
-                            </div>
-                        )}
-                    </div>
+                    <h2 className="text-2xl font-bold text-black">Activities</h2>
                     <div className="flex gap-3 items-center">
                         <select 
-                            className="filter-bubble"
+                            className="bg-gray-100 border border-gray-300 rounded px-3 py-1 text-black text-sm"
                             value={selectedFilter}
                             onChange={(e) => setSelectedFilter(e.target.value)}
                         >
-                            <option value="all" className="text-black">All Activities</option>
+                            <option value="all">All Activities</option>
                             {Array.from(new Set(activities.flatMap(act => act.labels))).map(label => (
-                                <option key={label} value={label} className="text-black">{label}</option>
+                                <option key={label} value={label}>{label}</option>
                             ))}
                         </select>
-                        <div className="sort-container">
-                            <select 
-                                className="sort-type-selector"
-                                value={sortType}
-                                onChange={(e) => setSortType(e.target.value as 'date' | 'rating')}
-                            >
-                                <option value="date">📅 Date</option>
-                                <option value="rating">⭐ Rating</option>
-                            </select>
-                            <Button 
-                                className="sort-bubble"
-                                onClick={() => {
-                                    if (sortOrder === 'none') setSortOrder('desc');
-                                    else if (sortOrder === 'desc') setSortOrder('asc');
-                                    else setSortOrder('none');
-                                }}
-                            >
-                                Sort {sortOrder === 'desc' ? '↓' : sortOrder === 'asc' ? '↑' : '📊'}
-                            </Button>
-                        </div>
                         <Button 
-                            className="calendar-bubble"
-                            onClick={() => setShowCalendar(true)}
-                        >
-                            📅 Calendar
-                        </Button>
-                        <Button 
-                            className="map-all-bubble"
-                            onClick={() => setShowAllMap(true)}
-                        >
-                            🗺️ View All Locations
-                        </Button>
-                        <Button 
-                            className="rate-bubble"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
                             onClick={() => window.location.href = '/rate'}
                         >
-                            ⭐ Rate Activities
-                        </Button>
-                        <Button 
-                            className="suggestions-bubble"
-                            onClick={() => window.location.href = '/suggestions'}
-                        >
-                            💡 Suggestions
+                            Rate Activities
                         </Button>
                     </div>
                 </div>
 
-                {isAuthenticated && currentUser && (
-                    <div className="mb-4">
-                        <Dialog
-                            open={dialogOpen}
-                            onOpenChange={(open: boolean) => {
-                                setDialogOpen(open);
-                                if (!open) {
-                                    resetForm();
-                                    setEditingActivity(null);
-                                }
-                            }}
-                        >
-                            <DialogTrigger asChild>
-                                <Button className="add-activity-bubble">✨ Add Activity</Button>
-                            </DialogTrigger>
-
-                            <DialogContent className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-white/20 max-h-[80vh] overflow-y-auto">
-                                <DialogHeader>
-                                    <DialogTitle className="text-white text-lg">{editingActivity ? 'Edit Activity' : 'Add Activity'}</DialogTitle>
-                                </DialogHeader>
-
-                                <div className="grid grid-cols-2 gap-3 mt-3">
-                                    <div className="col-span-2">
-                                        <label className="block mb-1 text-sm font-medium text-white" htmlFor="title">Title</label>
-                                        <input
-                                            id="title"
-                                            className="w-full p-2 text-sm border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                            placeholder="Activity name..."
-                                            value={title}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <label className="block mb-1 text-sm font-medium text-white" htmlFor="description">Description</label>
-                                        <textarea
-                                            id="description"
-                                            className="w-full p-2 text-sm border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                            placeholder="Optional details..."
-                                            rows={2}
-                                            value={description}
-                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <label className="block mb-1 text-sm font-medium text-white" htmlFor="address">Address</label>
-                                        <input
-                                            id="address"
-                                            className="w-full p-2 text-sm border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                            placeholder="Location..."
-                                            value={address}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <label className="block mb-1 text-sm font-medium text-white" htmlFor="labels">Labels</label>
-                                        <input
-                                            id="labels"
-                                            className="w-full p-2 text-sm border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                            placeholder="outdoors, food"
-                                            value={labels.join(", ")}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                setLabels(e.target.value.split(",").map((l: string) => l.trim()))
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <label className="block mb-1 text-sm font-medium text-white" htmlFor="date">Date</label>
-                                        <input
-                                            id="date"
-                                            type="date"
-                                            required
-                                            className="w-full p-2 text-sm border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
-                                            value={date}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block mb-1 text-sm font-medium text-white" htmlFor="ayoubRating">⭐ Ayoub's Rating</label>
-                                        <input
-                                            id="ayoubRating"
-                                            type="number"
-                                            min="1"
-                                            max="10"
-                                            className="w-full p-2 text-sm border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
-                                            value={ayoubRating}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAyoubRating(Number(e.target.value))}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block mb-1 text-sm font-medium text-white" htmlFor="medinaRating">⭐ Medina's Rating</label>
-                                        <input
-                                            id="medinaRating"
-                                            type="number"
-                                            min="1"
-                                            max="10"
-                                            className="w-full p-2 text-sm border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
-                                            value={medinaRating}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMedinaRating(Number(e.target.value))}
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <label className="block mb-1 text-sm font-medium text-white" htmlFor="moment">Moment Story</label>
-                                        <textarea
-                                            id="moment"
-                                            className="w-full p-2 text-sm border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                            placeholder="Write your moment story..."
-                                            rows={2}
-                                            value={moment}
-                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMoment(e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <Button 
-                                            onClick={handleAdd}
-                                            className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
-                                        >
-                                            {editingActivity ? 'Update' : 'Submit'}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
-                )}
-
-                {isAuthenticated && currentUser && (
-                    <>
-                        {/* Future Activities */}
-                        <div className="mt-6">
-                            <h3 className="galaxy-title">🚀 Future Activities</h3>
-                            <div className="bubble-container">
-                                {activities
-                                    .filter(act => {
-                                        if (!act.date) return false;
-                                        const actDate = new Date(act.date);
-                                        const today = new Date();
-                                        today.setHours(0, 0, 0, 0);
-                                        return actDate >= today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
-                                    })
-                                    .sort((a, b) => {
-                                        if (sortOrder === 'none') return 0;
-                                        if (sortType === 'date') {
-                                            const dateA = new Date(a.date).getTime();
-                                            const dateB = new Date(b.date).getTime();
-                                            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-                                        } else {
-                                            return sortOrder === 'desc' ? b.rating - a.rating : a.rating - b.rating;
-                                        }
-                                    })
-                                    .map((act: Activity, idx: number) => {
-                                        const bubbleColors = [
-                                            'bubble-pink',
-                                            'bubble-blue', 
-                                            'bubble-green',
-                                            'bubble-purple',
-                                            'bubble-orange',
-                                            'bubble-cyan'
-                                        ];
-                                        const bubbleClass = bubbleColors[idx % bubbleColors.length];
-                                        
-                                        return (
-                                            <div key={idx} className={`activity-bubble ${bubbleClass}`}>
-                                                <div className="bubble-content">
-                                                    <div className="bubble-title">{act.title}</div>
-                                                    <div className="bubble-date">📅 {act.date}</div>
-                                                    {act.description && <div className="bubble-desc">{act.description}</div>}
-                                                    {act.address && <div className="bubble-location">📍 {act.address}</div>}
-                                                    {act.labels.length > 0 && <div className="bubble-labels">🏷️ {act.labels.join(", ")}</div>}
-                                                    <div className="bubble-rating">
-                                                        Ayoub's: {getStarRating(act.ayoubRating)}<br/>
-                                                        Medina's: {getStarRating(act.medinaRating)}
-                                                    </div>
-                                                </div>
-                                                <div className="bubble-actions">
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        className="bubble-btn view"
-                                                        onClick={() => setViewingActivity(act)}
-                                                    >
-                                                        👁️
-                                                    </Button>
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        className="bubble-btn edit"
-                                                        onClick={() => handleEdit(act)}
-                                                    >
-                                                        ✏️
-                                                    </Button>
-                                                    <Button 
-                                                        variant="destructive" 
-                                                        size="sm"
-                                                        className="bubble-btn delete"
-                                                        onClick={() => handleDelete(act.id!)}
-                                                    >
-                                                        🗑️
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                }
-                            </div>
-                        </div>
-
-                        {/* Past Activities */}
-                        <div className="mt-6">
-                            <h3 className="galaxy-title">📋 Past Activities</h3>
-                            <div className="bubble-container">
-                                {activities
-                                    .filter(act => {
-                                        if (!act.date) return true;
-                                        const actDate = new Date(act.date);
-                                        const today = new Date();
-                                        today.setHours(0, 0, 0, 0);
-                                        return actDate < today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
-                                    })
-                                    .sort((a, b) => {
-                                        if (sortOrder === 'none') return 0;
-                                        if (sortType === 'date') {
-                                            const dateA = new Date(a.date).getTime();
-                                            const dateB = new Date(b.date).getTime();
-                                            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-                                        } else {
-                                            return sortOrder === 'desc' ? b.rating - a.rating : a.rating - b.rating;
-                                        }
-                                    })
-                                    .map((act: Activity, idx: number) => {
-                                        return (
-                                            <div key={idx} className="activity-bubble bubble-gray past">
-                                                <div className="bubble-content">
-                                                    <div className="bubble-title">{act.title}</div>
-                                                    <div className="bubble-date">📅 {act.date || 'No date'}</div>
-                                                    {act.description && <div className="bubble-desc">{act.description}</div>}
-                                                    {act.address && <div className="bubble-location">📍 {act.address}</div>}
-                                                    {act.labels.length > 0 && <div className="bubble-labels">🏷️ {act.labels.join(", ")}</div>}
-                                                    <div className="bubble-rating">
-                                                        Ayoub's: {getStarRating(act.ayoubRating)}<br/>
-                                                        Medina's: {getStarRating(act.medinaRating)}
-                                                    </div>
-                                                </div>
-                                                <div className="bubble-actions">
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        className="bubble-btn view"
-                                                        onClick={() => setViewingActivity(act)}
-                                                    >
-                                                        👁️
-                                                    </Button>
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        className="bubble-btn edit"
-                                                        onClick={() => handleEdit(act)}
-                                                    >
-                                                        ✏️
-                                                    </Button>
-                                                    <Button 
-                                                        variant="destructive" 
-                                                        size="sm"
-                                                        className="bubble-btn delete"
-                                                        onClick={() => handleDelete(act.id!)}
-                                                    >
-                                                        🗑️
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                }
-                            </div>
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {/* View Details Modal */}
-            {viewingActivity && (
-                <div className="moment-modal-overlay" onClick={() => {
-                    setViewingActivity(null);
-                    if (cameFromCalendar) {
-                        setShowCalendar(true);
-                        setCameFromCalendar(false);
-                    }
-                }}>
-                    <div className="moment-modal" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                            className="moment-close"
-                            onClick={() => {
-                                setViewingActivity(null);
-                                if (cameFromCalendar) {
-                                    setShowCalendar(true);
-                                    setCameFromCalendar(false);
-                                }
-                            }}
-                        >
-                            ✕
-                        </button>
-                        
-                        <div className="moment-content">
-                            <h2 className="moment-title">{viewingActivity?.title}</h2>
-                            
-                            <div className="moment-details">
-                                <div className="detail-item">
-                                    <span className="detail-label">📅 Date</span>
-                                    <span className="detail-value">{viewingActivity?.date}</span>
-                                </div>
-                                
-                                {viewingActivity?.address && (
-                                    <div className="detail-item">
-                                        <span className="detail-label">📍 Location</span>
-                                        <span 
-                                            className="detail-value clickable-address"
-                                            onClick={() => {
-                                                if (viewingActivity) {
-                                                    setMapAddress(viewingActivity.address);
-                                                    setActivityBeforeMap(viewingActivity);
-                                                    setShowMap(true);
-                                                    setViewingActivity(null);
-                                                }
-                                            }}
-                                        >
-                                            {viewingActivity.address}
-                                        </span>
-                                    </div>
-                                )}
-                                
-                                <div className="detail-item">
-                                    <span className="detail-label">⭐ Ratings</span>
-                                    <span className="detail-value">
-                                        Ayoub's: {getStarRating(viewingActivity?.ayoubRating || 0)}<br/>
-                                        Medina's: {getStarRating(viewingActivity?.medinaRating || 0)}
-                                    </span>
-                                </div>
-                                
-                                {viewingActivity?.labels && viewingActivity.labels.length > 0 && (
-                                    <div className="detail-item">
-                                        <span className="detail-label">🏷️ Labels</span>
-                                        <span className="detail-value">{viewingActivity.labels.join(", ")}</span>
-                                    </div>
-                                )}
-                            </div>
-                            
-                            <div className="moment-description">
-                                <h3 className="story-header">Moment</h3>
-                                {viewingActivity?.moment ? (
-                                    <p className="story-text">{viewingActivity.moment}</p>
-                                ) : (
-                                    <p className="story-placeholder">No moment written yet...</p>
-                                )}
-                            </div>
-                            
-                            <div className="moment-copyright">
-                                <p className="copyright-text">
-                                    © Moments App<br/>
-                                    📞 514 998 8996<br/>
-                                    📍 581 rue des alouettes, Laval, H7G 3W9, Quebec, Canada
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Map Modal */}
-            {showMap && (
-                <MapModal 
-                    address={mapAddress}
-                    onClose={() => {
-                        setShowMap(false);
-                        setMapAddress('');
-                        if (activityBeforeMap) {
-                            setViewingActivity(activityBeforeMap);
-                            setActivityBeforeMap(null);
+            <div className="mb-4">
+                <Dialog
+                    open={dialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setDialogOpen(open);
+                        if (!open) {
+                            resetForm();
+                            setEditingActivity(null);
                         }
                     }}
-                />
-            )}
+                >
+                    <DialogTrigger asChild>
+                        <Button className="bg-green-600 hover:bg-green-700 text-white">Add Activity</Button>
+                    </DialogTrigger>
 
-            {/* All Locations Modal */}
-            {showAllMap && (
-                <AllLocationsModal 
-                    activities={activities}
-                    onClose={() => setShowAllMap(false)}
-                />
-            )}
+                <DialogContent className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-white/20">
+                    <DialogHeader>
+                        <DialogTitle className="text-white">{editingActivity ? 'Edit Activity' : 'Add a new activity'}</DialogTitle>
+                    </DialogHeader>
 
-            {/* Calendar Modal */}
-            {showCalendar && (
-                <CalendarModal 
-                    activities={activities}
-                    onClose={() => setShowCalendar(false)}
-                    onActivitySelect={(activity) => {
-                        setViewingActivity(activity);
-                        setCameFromCalendar(true);
-                        setShowCalendar(false);
-                    }}
-                />
-            )}
+                    <div className="flex flex-col gap-4 mt-4">
+                        {/* Title */}
+                        <div>
+                            <label className="block mb-1 font-medium text-white" htmlFor="title">
+                                Title
+                            </label>
+                            <input
+                                id="title"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
+                                placeholder="Activity name..."
+                                value={title}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                            <label className="block mb-1 font-medium text-white" htmlFor="description">
+                                Description
+                            </label>
+                            <textarea
+                                id="description"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
+                                placeholder="Optional details..."
+                                value={description}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Address */}
+                        <div>
+                            <label className="block mb-1 font-medium text-white" htmlFor="address">
+                                Address / Place
+                            </label>
+                            <input
+                                id="address"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
+                                placeholder="Location or map link..."
+                                value={address}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Labels */}
+                        <div>
+                            <label className="block mb-1 font-medium text-white" htmlFor="labels">
+                                Labels
+                            </label>
+                            <input
+                                id="labels"
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
+                                placeholder="Comma-separated, e.g., outdoors, food"
+                                value={labels.join(", ")}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                    setLabels(e.target.value.split(",").map((l: string) => l.trim()))
+                                }
+                            />
+                        </div>
+
+                        {/* Date */}
+                        <div>
+                            <label className="block mb-1 font-medium text-white" htmlFor="date">
+                                Date
+                            </label>
+                            <input
+                                id="date"
+                                type="date"
+                                required
+                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
+                                value={date}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
+                            />
+                        </div>
+
+                        <Button 
+                            onClick={handleAdd}
+                            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                        >
+                            {editingActivity ? 'Update' : 'Submit'}
+                        </Button>
+                    </div>
+                </DialogContent>
+                </Dialog>
+            </div>
+
+                {/* Future Activities */}
+                <div className="mt-6">
+                    <h3 className="text-lg font-bold text-black mb-3">🚀 Future Activities</h3>
+                    <div className="grid gap-2">
+                        {activities
+                            .filter(act => {
+                                if (!act.date) return false;
+                                const actDate = new Date(act.date);
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                return actDate >= today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
+                            })
+                            .map((act: Activity, idx: number) => {
+                                const planetColors = [
+                                    'bg-gradient-to-br from-blue-400 to-blue-600',
+                                    'bg-gradient-to-br from-red-400 to-red-600',
+                                    'bg-gradient-to-br from-yellow-400 to-orange-500',
+                                    'bg-gradient-to-br from-purple-400 to-purple-600',
+                                    'bg-gradient-to-br from-green-400 to-green-600',
+                                    'bg-gradient-to-br from-pink-400 to-pink-600'
+                                ];
+                                const planetBg = planetColors[idx % planetColors.length];
+                                
+                                return (
+                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-3 flex justify-between text-xs`}>
+                                        <div className="flex-1">
+                                            <div className="font-bold mb-1">{act.title}</div>
+                                            <div className="text-white/80 mb-1">{act.date || 'No date'}</div>
+                                            {act.description && <div className="text-white/80 mb-1">{act.description}</div>}
+                                            {act.address && <div className="text-white/80 mb-1">📍 {act.address}</div>}
+                                            {act.labels.length > 0 && <div className="text-white/80 mb-1">🏷️ {act.labels.join(", ")}</div>}
+                                            <div className="text-white/80">⭐ {(act.ayoubRating + act.medinaRating) / 2}/10</div>
+                                        </div>
+                                        <div className="flex flex-col gap-1 ml-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-5 px-1 text-xs"
+                                                onClick={() => handleEdit(act)}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button 
+                                                variant="destructive" 
+                                                size="sm"
+                                                className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50 h-5 px-1 text-xs"
+                                                onClick={() => handleDelete(act.id!)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        }
+                    </div>
+                </div>
+
+                {/* Past Activities */}
+                <div className="mt-6">
+                    <h3 className="text-lg font-bold text-black mb-3">📋 Past Activities</h3>
+                    <div className="grid gap-2">
+                        {activities
+                            .filter(act => {
+                                if (!act.date) return true; // Show activities without date in past
+                                const actDate = new Date(act.date);
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                return actDate < today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
+                            })
+                            .map((act: Activity, idx: number) => {
+                                const planetColors = [
+                                    'bg-gradient-to-br from-gray-400 to-gray-600',
+                                    'bg-gradient-to-br from-slate-400 to-slate-600',
+                                    'bg-gradient-to-br from-zinc-400 to-zinc-600'
+                                ];
+                                const planetBg = planetColors[idx % planetColors.length];
+                                
+                                return (
+                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-3 flex justify-between text-xs opacity-75`}>
+                                        <div className="flex-1">
+                                            <div className="font-bold mb-1">{act.title}</div>
+                                            <div className="text-white/80 mb-1">{act.date || 'No date'}</div>
+                                            {act.description && <div className="text-white/80 mb-1">{act.description}</div>}
+                                            {act.address && <div className="text-white/80 mb-1">📍 {act.address}</div>}
+                                            {act.labels.length > 0 && <div className="text-white/80 mb-1">🏷️ {act.labels.join(", ")}</div>}
+                                            <div className="text-white/80">⭐ {(act.ayoubRating + act.medinaRating) / 2}/10</div>
+                                        </div>
+                                        <div className="flex flex-col gap-1 ml-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-5 px-1 text-xs"
+                                                onClick={() => handleEdit(act)}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button 
+                                                variant="destructive" 
+                                                size="sm"
+                                                className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50 h-5 px-1 text-xs"
+                                                onClick={() => handleDelete(act.id!)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        }
+                    </div>
+                </div>
+            </div>
         </main>
     );
 }
