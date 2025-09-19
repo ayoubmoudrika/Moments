@@ -173,246 +173,389 @@ export default function ActivitiesPage() {
     };
 
     return (
-        <main className="min-h-screen p-6 bg-white">
-            <div>
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-black">Activities</h2>
-                    <div className="flex gap-3 items-center">
+        <main className="min-h-screen p-6 relative">
+            {/* Galaxy background elements */}
+            <div className="planet-1"></div>
+            <div className="planet-2"></div>
+            
+            {/* Notification */}
+            {notification && (
+                <div className={`notification ${notification.split('|')[1]}`}>
+                    {notification.split('|')[0]}
+                </div>
+            )}
+
+            <div className="relative z-10">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="galaxy-title">Moments</h1>
+                    
+                    {!isAuthenticated ? (
+                        <div className="login-section">
+                            <button 
+                                className="login-btn ayoub-btn"
+                                onClick={() => {
+                                    localStorage.setItem('authenticated', 'true');
+                                    localStorage.setItem('currentUser', 'Ayoub');
+                                    setIsAuthenticated(true);
+                                    setCurrentUser('Ayoub');
+                                }}
+                            >
+                                Login as Ayoub
+                            </button>
+                            <button 
+                                className="login-btn medina-btn"
+                                onClick={() => {
+                                    localStorage.setItem('authenticated', 'true');
+                                    localStorage.setItem('currentUser', 'Medina');
+                                    setIsAuthenticated(true);
+                                    setCurrentUser('Medina');
+                                }}
+                            >
+                                Login as Medina
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="user-info">
+                            <span className="welcome-text">Welcome, {currentUser}! ✨</span>
+                            <button 
+                                className="logout-btn"
+                                onClick={() => {
+                                    localStorage.removeItem('authenticated');
+                                    localStorage.removeItem('currentUser');
+                                    setIsAuthenticated(false);
+                                    setCurrentUser(null);
+                                }}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-4 mb-8 justify-center">
+                    <Dialog
+                        open={dialogOpen}
+                        onOpenChange={(open: boolean) => {
+                            setDialogOpen(open);
+                            if (!open) {
+                                resetForm();
+                                setEditingActivity(null);
+                            }
+                        }}
+                    >
+                        <DialogTrigger asChild>
+                            <button className="add-activity-bubble">✨ Add Activity</button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{editingActivity ? 'Edit Activity' : 'Add New Activity'}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block mb-2 font-medium">Title</label>
+                                    <input
+                                        className="w-full p-3 rounded-lg bg-white/10 border border-white/30 text-white placeholder-white/70"
+                                        placeholder="Activity name..."
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block mb-2 font-medium">Description</label>
+                                    <textarea
+                                        className="w-full p-3 rounded-lg bg-white/10 border border-white/30 text-white placeholder-white/70"
+                                        placeholder="Optional details..."
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block mb-2 font-medium">Address</label>
+                                    <input
+                                        className="w-full p-3 rounded-lg bg-white/10 border border-white/30 text-white placeholder-white/70"
+                                        placeholder="Location..."
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block mb-2 font-medium">Labels</label>
+                                    <input
+                                        className="w-full p-3 rounded-lg bg-white/10 border border-white/30 text-white placeholder-white/70"
+                                        placeholder="Comma-separated tags..."
+                                        value={labels.join(", ")}
+                                        onChange={(e) => setLabels(e.target.value.split(",").map(l => l.trim()))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block mb-2 font-medium">Date</label>
+                                    <input
+                                        type="date"
+                                        className="w-full p-3 rounded-lg bg-white/10 border border-white/30 text-white"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block mb-2 font-medium">Ayoub Rating (1-10)</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="10"
+                                            className="w-full p-3 rounded-lg bg-white/10 border border-white/30 text-white"
+                                            value={ayoubRating}
+                                            onChange={(e) => setAyoubRating(Number(e.target.value))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-2 font-medium">Medina Rating (1-10)</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="10"
+                                            className="w-full p-3 rounded-lg bg-white/10 border border-white/30 text-white"
+                                            value={medinaRating}
+                                            onChange={(e) => setMedinaRating(Number(e.target.value))}
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleAdd}
+                                    className="w-full bg-white/20 hover:bg-white/30 text-white py-3 rounded-lg font-medium transition-all"
+                                >
+                                    {editingActivity ? 'Update Activity' : 'Add Activity'}
+                                </button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+
+                    <button 
+                        className="rate-bubble"
+                        onClick={() => window.location.href = '/rate'}
+                    >
+                        🎯 Rate Activities
+                    </button>
+
+                    <button 
+                        className="calendar-bubble"
+                        onClick={() => setShowCalendar(true)}
+                    >
+                        📅 Calendar View
+                    </button>
+
+                    <button 
+                        className="map-all-bubble"
+                        onClick={() => setShowAllMap(true)}
+                    >
+                        🗺️ Map All Locations
+                    </button>
+
+                    <select 
+                        className="filter-bubble"
+                        value={selectedFilter}
+                        onChange={(e) => setSelectedFilter(e.target.value)}
+                    >
+                        <option value="all">All Activities</option>
+                        {Array.from(new Set(activities.flatMap(act => act.labels))).map(label => (
+                            <option key={label} value={label}>{label}</option>
+                        ))}
+                    </select>
+
+                    <div className="sort-container">
                         <select 
-                            className="bg-gray-100 border border-gray-300 rounded px-3 py-1 text-black text-sm"
-                            value={selectedFilter}
-                            onChange={(e) => setSelectedFilter(e.target.value)}
+                            className="sort-type-selector"
+                            value={sortType}
+                            onChange={(e) => setSortType(e.target.value as 'date' | 'rating')}
                         >
-                            <option value="all">All Activities</option>
-                            {Array.from(new Set(activities.flatMap(act => act.labels))).map(label => (
-                                <option key={label} value={label}>{label}</option>
-                            ))}
+                            <option value="date">Sort by Date</option>
+                            <option value="rating">Sort by Rating</option>
                         </select>
-                        <Button 
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                            onClick={() => window.location.href = '/rate'}
+                        <button 
+                            className={`sort-bubble ${sortOrder === 'asc' ? 'active' : ''}`}
+                            onClick={() => setSortOrder(sortOrder === 'asc' ? 'none' : 'asc')}
                         >
-                            Rate Activities
-                        </Button>
+                            ↑
+                        </button>
+                        <button 
+                            className={`sort-bubble ${sortOrder === 'desc' ? 'active' : ''}`}
+                            onClick={() => setSortOrder(sortOrder === 'desc' ? 'none' : 'desc')}
+                        >
+                            ↓
+                        </button>
                     </div>
                 </div>
 
-            <div className="mb-4">
-                <Dialog
-                    open={dialogOpen}
-                    onOpenChange={(open: boolean) => {
-                        setDialogOpen(open);
-                        if (!open) {
-                            resetForm();
-                            setEditingActivity(null);
-                        }
-                    }}
-                >
-                    <DialogTrigger asChild>
-                        <Button className="bg-green-600 hover:bg-green-700 text-white">Add Activity</Button>
-                    </DialogTrigger>
 
-                <DialogContent className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-white/20">
-                    <DialogHeader>
-                        <DialogTitle className="text-white">{editingActivity ? 'Edit Activity' : 'Add a new activity'}</DialogTitle>
-                    </DialogHeader>
 
-                    <div className="flex flex-col gap-4 mt-4">
-                        {/* Title */}
-                        <div>
-                            <label className="block mb-1 font-medium text-white" htmlFor="title">
-                                Title
-                            </label>
-                            <input
-                                id="title"
-                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                placeholder="Activity name..."
-                                value={title}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Description */}
-                        <div>
-                            <label className="block mb-1 font-medium text-white" htmlFor="description">
-                                Description
-                            </label>
-                            <textarea
-                                id="description"
-                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                placeholder="Optional details..."
-                                value={description}
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Address */}
-                        <div>
-                            <label className="block mb-1 font-medium text-white" htmlFor="address">
-                                Address / Place
-                            </label>
-                            <input
-                                id="address"
-                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                placeholder="Location or map link..."
-                                value={address}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Labels */}
-                        <div>
-                            <label className="block mb-1 font-medium text-white" htmlFor="labels">
-                                Labels
-                            </label>
-                            <input
-                                id="labels"
-                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white placeholder-white/70 focus:bg-white/20"
-                                placeholder="Comma-separated, e.g., outdoors, food"
-                                value={labels.join(", ")}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setLabels(e.target.value.split(",").map((l: string) => l.trim()))
-                                }
-                            />
-                        </div>
-
-                        {/* Date */}
-                        <div>
-                            <label className="block mb-1 font-medium text-white" htmlFor="date">
-                                Date
-                            </label>
-                            <input
-                                id="date"
-                                type="date"
-                                required
-                                className="w-full p-2 border border-white/30 rounded bg-white/10 text-white focus:bg-white/20"
-                                value={date}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
-                            />
-                        </div>
-
-                        <Button 
-                            onClick={handleAdd}
-                            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-                        >
-                            {editingActivity ? 'Update' : 'Submit'}
-                        </Button>
-                    </div>
-                </DialogContent>
-                </Dialog>
-            </div>
-
-                {/* Future Activities */}
-                <div className="mt-6">
-                    <h3 className="text-lg font-bold text-black mb-3">🚀 Future Activities</h3>
-                    <div className="grid gap-2">
-                        {activities
-                            .filter(act => {
-                                if (!act.date) return false;
-                                const actDate = new Date(act.date);
-                                const today = new Date();
-                                today.setHours(0, 0, 0, 0);
-                                return actDate >= today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
-                            })
-                            .map((act: Activity, idx: number) => {
-                                const planetColors = [
-                                    'bg-gradient-to-br from-blue-400 to-blue-600',
-                                    'bg-gradient-to-br from-red-400 to-red-600',
-                                    'bg-gradient-to-br from-yellow-400 to-orange-500',
-                                    'bg-gradient-to-br from-purple-400 to-purple-600',
-                                    'bg-gradient-to-br from-green-400 to-green-600',
-                                    'bg-gradient-to-br from-pink-400 to-pink-600'
-                                ];
-                                const planetBg = planetColors[idx % planetColors.length];
-                                
-                                return (
-                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-3 flex justify-between text-xs`}>
-                                        <div className="flex-1">
-                                            <div className="font-bold mb-1">{act.title}</div>
-                                            <div className="text-white/80 mb-1">{act.date || 'No date'}</div>
-                                            {act.description && <div className="text-white/80 mb-1">{act.description}</div>}
-                                            {act.address && <div className="text-white/80 mb-1">📍 {act.address}</div>}
-                                            {act.labels.length > 0 && <div className="text-white/80 mb-1">🏷️ {act.labels.join(", ")}</div>}
-                                            <div className="text-white/80">⭐ {(act.ayoubRating + act.medinaRating) / 2}/10</div>
-                                        </div>
-                                        <div className="flex flex-col gap-1 ml-2">
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-5 px-1 text-xs"
-                                                onClick={() => handleEdit(act)}
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button 
-                                                variant="destructive" 
-                                                size="sm"
-                                                className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50 h-5 px-1 text-xs"
-                                                onClick={() => handleDelete(act.id!)}
-                                            >
-                                                Delete
-                                            </Button>
+                {/* Activities Display */}
+                <div className="bubble-container">
+                    {activities
+                        .filter(act => selectedFilter === 'all' || act.labels.includes(selectedFilter))
+                        .sort((a, b) => {
+                            if (sortOrder === 'none') return 0;
+                            
+                            let comparison = 0;
+                            if (sortType === 'date') {
+                                const dateA = new Date(a.date || '1970-01-01');
+                                const dateB = new Date(b.date || '1970-01-01');
+                                comparison = dateA.getTime() - dateB.getTime();
+                            } else {
+                                const avgA = (a.ayoubRating + a.medinaRating) / 2;
+                                const avgB = (b.ayoubRating + b.medinaRating) / 2;
+                                comparison = avgA - avgB;
+                            }
+                            
+                            return sortOrder === 'asc' ? comparison : -comparison;
+                        })
+                        .map((act, idx) => {
+                            const bubbleColors = [
+                                'bubble-pink', 'bubble-blue', 'bubble-green', 
+                                'bubble-purple', 'bubble-orange', 'bubble-cyan', 'bubble-gray'
+                            ];
+                            const bubbleClass = bubbleColors[idx % bubbleColors.length];
+                            
+                            const activityDate = act.date ? new Date(act.date) : null;
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const isPast = activityDate && activityDate < today;
+                            
+                            return (
+                                <div key={act.id || idx} className={`activity-bubble ${bubbleClass} ${isPast ? 'past' : ''}`}>
+                                    <div className="bubble-content">
+                                        <div className="bubble-title">{act.title}</div>
+                                        <div className="bubble-date">{act.date || 'No date set'}</div>
+                                        {act.description && <div className="bubble-desc">{act.description}</div>}
+                                        {act.address && <div className="bubble-location">📍 {act.address}</div>}
+                                        {act.labels.length > 0 && <div className="bubble-labels">🏷️ {act.labels.join(', ')}</div>}
+                                        <div className="bubble-rating">
+                                            ⭐ {((act.ayoubRating + act.medinaRating) / 2).toFixed(1)}/10
                                         </div>
                                     </div>
-                                );
-                            })
-                        }
-                    </div>
-                </div>
-
-                {/* Past Activities */}
-                <div className="mt-6">
-                    <h3 className="text-lg font-bold text-black mb-3">📋 Past Activities</h3>
-                    <div className="grid gap-2">
-                        {activities
-                            .filter(act => {
-                                if (!act.date) return true; // Show activities without date in past
-                                const actDate = new Date(act.date);
-                                const today = new Date();
-                                today.setHours(0, 0, 0, 0);
-                                return actDate < today && (selectedFilter === 'all' || act.labels.includes(selectedFilter));
-                            })
-                            .map((act: Activity, idx: number) => {
-                                const planetColors = [
-                                    'bg-gradient-to-br from-gray-400 to-gray-600',
-                                    'bg-gradient-to-br from-slate-400 to-slate-600',
-                                    'bg-gradient-to-br from-zinc-400 to-zinc-600'
-                                ];
-                                const planetBg = planetColors[idx % planetColors.length];
-                                
-                                return (
-                                    <div key={idx} className={`${planetBg} text-white border-white/20 rounded p-3 flex justify-between text-xs opacity-75`}>
-                                        <div className="flex-1">
-                                            <div className="font-bold mb-1">{act.title}</div>
-                                            <div className="text-white/80 mb-1">{act.date || 'No date'}</div>
-                                            {act.description && <div className="text-white/80 mb-1">{act.description}</div>}
-                                            {act.address && <div className="text-white/80 mb-1">📍 {act.address}</div>}
-                                            {act.labels.length > 0 && <div className="text-white/80 mb-1">🏷️ {act.labels.join(", ")}</div>}
-                                            <div className="text-white/80">⭐ {(act.ayoubRating + act.medinaRating) / 2}/10</div>
-                                        </div>
-                                        <div className="flex flex-col gap-1 ml-2">
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-5 px-1 text-xs"
-                                                onClick={() => handleEdit(act)}
+                                    <div className="bubble-actions">
+                                        <button 
+                                            className="bubble-btn"
+                                            onClick={() => handleEdit(act)}
+                                            title="Edit"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button 
+                                            className="bubble-btn"
+                                            onClick={() => handleDelete(act.id!)}
+                                            title="Delete"
+                                        >
+                                            🗑️
+                                        </button>
+                                        {act.address && (
+                                            <button 
+                                                className="bubble-btn"
+                                                onClick={() => {
+                                                    setMapAddress(act.address!);
+                                                    setShowMap(true);
+                                                }}
+                                                title="View on Map"
                                             >
-                                                Edit
-                                            </Button>
-                                            <Button 
-                                                variant="destructive" 
-                                                size="sm"
-                                                className="bg-red-500/80 hover:bg-red-600/80 border-red-400/50 h-5 px-1 text-xs"
-                                                onClick={() => handleDelete(act.id!)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </div>
+                                                🗺️
+                                            </button>
+                                        )}
+                                        <button 
+                                            className="bubble-btn"
+                                            onClick={() => setViewingActivity(act)}
+                                            title="View Details"
+                                        >
+                                            👁️
+                                        </button>
                                     </div>
-                                );
-                            })
-                        }
+                                </div>
+                            );
+                        })
+                    }
+                }
+
+                {/* Modals */}
+                {showMap && (
+                    <MapModal 
+                        address={mapAddress}
+                        onClose={() => setShowMap(false)}
+                    />
+                )}
+
+                {showAllMap && (
+                    <AllLocationsModal 
+                        activities={activities}
+                        onClose={() => setShowAllMap(false)}
+                    />
+                )}
+
+                {showCalendar && (
+                    <CalendarModal 
+                        activities={activities}
+                        onClose={() => setShowCalendar(false)}
+                        onActivityClick={(activity) => {
+                            setViewingActivity(activity);
+                            setShowCalendar(false);
+                            setCameFromCalendar(true);
+                        }}
+                    />
+                )}
+
+                {viewingActivity && (
+                    <div className="moment-modal-overlay" onClick={() => setViewingActivity(null)}>
+                        <div className="moment-modal" onClick={(e) => e.stopPropagation()}>
+                            <button className="moment-close" onClick={() => setViewingActivity(null)}>×</button>
+                            <h2 className="moment-title">{viewingActivity.title}</h2>
+                            
+                            <div className="moment-details">
+                                <div className="detail-item">
+                                    <span className="detail-label">Date:</span>
+                                    <span className="detail-value">{viewingActivity.date || 'Not set'}</span>
+                                </div>
+                                {viewingActivity.address && (
+                                    <div className="detail-item">
+                                        <span className="detail-label">Location:</span>
+                                        <span className="detail-value clickable-address" 
+                                              onClick={() => {
+                                                  setMapAddress(viewingActivity.address!);
+                                                  setShowMap(true);
+                                                  setActivityBeforeMap(viewingActivity);
+                                                  setViewingActivity(null);
+                                              }}>
+                                            {viewingActivity.address}
+                                        </span>
+                                    </div>
+                                )}
+                                {viewingActivity.labels.length > 0 && (
+                                    <div className="detail-item">
+                                        <span className="detail-label">Tags:</span>
+                                        <span className="detail-value">{viewingActivity.labels.join(', ')}</span>
+                                    </div>
+                                )}
+                                <div className="detail-item">
+                                    <span className="detail-label">Ayoub's Rating:</span>
+                                    <span className="detail-value">{viewingActivity.ayoubRating}/10 {getStarRating(viewingActivity.ayoubRating)}</span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Medina's Rating:</span>
+                                    <span className="detail-value">{viewingActivity.medinaRating}/10 {getStarRating(viewingActivity.medinaRating)}</span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Average:</span>
+                                    <span className="detail-value">{((viewingActivity.ayoubRating + viewingActivity.medinaRating) / 2).toFixed(1)}/10</span>
+                                </div>
+                            </div>
+
+                            {viewingActivity.description && (
+                                <div className="moment-description">
+                                    <h3 className="story-header">Description</h3>
+                                    <p className="story-text">{viewingActivity.description}</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
+                )}
                 </div>
             </div>
         </main>
