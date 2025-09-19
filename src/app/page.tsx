@@ -31,11 +31,12 @@ export default function ActivitiesPage() {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [notification, setNotification] = useState<string | null>(null);
 
-    // Load activities from database
+    // Load activities from localStorage
     useEffect(() => {
-        fetch('/api/activities')
-            .then(res => res.json())
-            .then(setActivities)
+        const stored = localStorage.getItem('activities');
+        if (stored) {
+            setActivities(JSON.parse(stored));
+        }
     }, []);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -119,43 +120,29 @@ export default function ActivitiesPage() {
         
         if (editingActivity) {
             // Update existing activity
-            const response = await fetch('/api/activities', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: editingActivity.id, title, description, address, labels, picture, ayoubRating, medinaRating, date, moment })
-            });
-            
-            const updatedActivity = await response.json();
-            setActivities(activities.map(act => act.id === editingActivity.id ? updatedActivity : act));
+            const updatedActivities = activities.map(act => 
+                act.id === editingActivity.id 
+                    ? { ...editingActivity, title, description, address, labels, picture, ayoubRating, medinaRating, date }
+                    : act
+            );
+            setActivities(updatedActivities);
+            localStorage.setItem('activities', JSON.stringify(updatedActivities));
         } else {
             // Create new activity
-            const response = await fetch('/api/activities', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, address, labels, picture, ayoubRating, medinaRating, date, moment })
-            });
-            
-            const newActivity = await response.json();
-            setActivities([newActivity, ...activities]);
-            
-            // Show cute notification
-            const randomMessage = cuteMessages[Math.floor(Math.random() * cuteMessages.length)];
-            const randomColor = notificationColors[Math.floor(Math.random() * notificationColors.length)];
-            showNotification(randomMessage, randomColor);
-            
-            // Send email notification
-            fetch('/api/send-notification', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ activity: newActivity })
-            }).catch(console.error);
-            
-            // Send WhatsApp notification
-            fetch('/api/send-whatsapp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ activity: newActivity })
-            }).catch(console.error);
+            const newActivity = {
+                id: Date.now(),
+                title,
+                description,
+                address,
+                labels,
+                picture,
+                ayoubRating,
+                medinaRating,
+                date
+            };
+            const updatedActivities = [newActivity, ...activities];
+            setActivities(updatedActivities);
+            localStorage.setItem('activities', JSON.stringify(updatedActivities));
         }
         
         resetForm();
@@ -180,16 +167,9 @@ export default function ActivitiesPage() {
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure you want to delete this activity?')) return;
         
-        try {
-            const response = await fetch(`/api/activities?id=${id}`, { method: 'DELETE' });
-            if (response.ok) {
-                setActivities(activities.filter(act => act.id !== id));
-            } else {
-                console.error('Delete failed:', response.status);
-            }
-        } catch (error) {
-            console.error('Delete error:', error);
-        }
+        const updatedActivities = activities.filter(act => act.id !== id);
+        setActivities(updatedActivities);
+        localStorage.setItem('activities', JSON.stringify(updatedActivities));
     };
 
     return (
