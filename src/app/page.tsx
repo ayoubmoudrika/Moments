@@ -473,7 +473,6 @@ export default function ActivitiesPage() {
                             );
                         })
                     }
-                }
 
                 {/* Modals */}
                 {showMap && (
