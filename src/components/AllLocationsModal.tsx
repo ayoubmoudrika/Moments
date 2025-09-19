@@ -27,7 +27,6 @@ export default function AllLocationsModal({ activities, onClose }: AllLocationsM
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    import('leaflet/dist/leaflet.css');
     
     const geocodeActivities = async () => {
       const locationsWithCoords = [];
