@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import twilio from 'twilio'
+const twilio = require('twilio')
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
