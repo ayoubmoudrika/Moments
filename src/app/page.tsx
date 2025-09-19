@@ -332,12 +332,7 @@ export default function ActivitiesPage() {
                         </DialogContent>
                     </Dialog>
 
-                    <button 
-                        className="rate-bubble"
-                        onClick={() => window.location.href = '/rate'}
-                    >
-                        🎯 Rate Activities
-                    </button>
+
 
                     <button 
                         className="calendar-bubble"
