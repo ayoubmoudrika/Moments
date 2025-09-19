@@ -165,10 +165,10 @@ export default function ActivitiesPage() {
 
     const handleEdit = (activity: Activity) => {
         setEditingActivity(activity);
-        setTitle(activity.title);
-        setDescription(activity.description);
-        setAddress(activity.address);
-        setLabels(activity.labels);
+        setTitle(activity.title || '');
+        setDescription(activity.description || '');
+        setAddress(activity.address || '');
+        setLabels(activity.labels || []);
         setPicture(activity.picture || '');
         setDate(activity.date || '2024-09-17');
         setAyoubRating(activity.ayoubRating || 5);
