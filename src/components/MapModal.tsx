@@ -65,8 +65,7 @@ export default function MapModal({ address, onClose }: MapModalProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Import Leaflet CSS and fix default icons
-    import('leaflet/dist/leaflet.css');
+    // Fix default icons
     
     // Fix Leaflet default icon issue
     delete (L.Icon.Default.prototype as any)._getIconUrl;
